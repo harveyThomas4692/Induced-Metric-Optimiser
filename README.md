@@ -5,6 +5,8 @@
 
 This repository contains the experiments and implementation for induced metric optimisers. These are preconditioning-based optimisers that utilise the induced metric, which is often illustrated in graphical visualisations of loss landscapes. Specifically, the approach involves pulling back the metric from a higher-dimensional space onto the loss landscape. This can be interpreted as a smoothed variant of gradient clipping.
 
+Implementations in both JAX and PyTorch are included, along with a file demonstrating the implementations are equivilent. All experiments were performed in JAX.
+
 For further details, see the paper: …
 
 ---
