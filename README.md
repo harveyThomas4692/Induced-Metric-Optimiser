@@ -7,6 +7,4 @@ This repository contains the experiments and implementation for induced metric o
 For further details, see the paper: …
 
 ---
-
-**Figure 1.** _The parameter update vs the gradient_  
 ![Figure 2](imagesimage/grad_clip.png)
