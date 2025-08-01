@@ -1,6 +1,6 @@
 # Induced-Metric-Optimiser
 
-**Figure 1.** _The proejection of a curve to the loss landscape from the higher dimensional space._
+**Figure 1.** _The proejection of a curve to the loss landscape from the higher dimensional space. When accounting for the higher dimensionanal space, the path travelled is significantly further_
 <img src="images/projection.png" alt="Figure 1" width="600"/>
 
 This repository contains the experiments and implementation for induced metric optimisers. These are preconditioning-based optimisers that utilise the induced metric, which is often illustrated in graphical visualisations of loss landscapes. Specifically, the approach involves pulling back the metric from a higher-dimensional space onto the loss landscape. This can be interpreted as a smoothed variant of gradient clipping.
