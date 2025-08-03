@@ -10,5 +10,5 @@ Implementations in both JAX and PyTorch are included, along with a file demonstr
 For further details, see the paper: …
 
 ---
-**Figure 2.** _The parameter update vs the gradient, where a is  a scale that depends on the other gradients._  
+**Figure 2.** _The parameter update vs the gradient, where a is a scale that depends on the local curvature._  
 ![Figure 2](images/grad_clip.png)
