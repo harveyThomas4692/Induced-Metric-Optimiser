@@ -23,15 +23,11 @@ import requests
 # Import shared models
 from shared_models import custom_sgd, custom_sgd_log, custom_sgd_rms, MiniGPT, SGDState, _compute_grad_norm_squared
 import pandas as pd
-import threading
 
 # Print JAX device information
 print(f"JAX devices: {jax.devices()}")
 print(f"JAX default backend: {jax.default_backend()}")
 
-# Global variable to track best configurations during sweep
-best_configs = []
-best_config_lock = threading.Lock()
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Tiny Shakespeare MiniGPT Hyperparameter Sweep')
@@ -948,7 +944,7 @@ def train_sgd_rms(config, seed):
         'val_perplexities': val_perplexities
     }
 
-def get_sweep_config(optimizer_name, is_best_config=False):
+def get_sweep_config(optimizer_name):
     """Get W&B sweep configuration for the given optimizer"""
     
     base_config = {
@@ -970,7 +966,7 @@ def get_sweep_config(optimizer_name, is_best_config=False):
             'beta1': {'distribution': 'uniform', 'min': 0.85, 'max': 0.95},
             'beta2': {'distribution': 'uniform', 'min': 0.95, 'max': 0.999},
             'eps': {'distribution': 'log_uniform_values', 'min': 1e-10, 'max': 1e-6},
-            'n_epochs': {'value': 50 if not is_best_config else 200}
+            'n_epochs': {'value': 200}
         }
     elif optimizer_name == 'adamw':
         base_config['parameters'] = {
@@ -979,33 +975,33 @@ def get_sweep_config(optimizer_name, is_best_config=False):
             'beta2': {'distribution': 'uniform', 'min': 0.95, 'max': 0.999},
             'eps': {'distribution': 'log_uniform_values', 'min': 1e-10, 'max': 1e-6},
             'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2},
-            'n_epochs': {'value': 50 if not is_best_config else 200}
+            'n_epochs': {'value': 200}
         }
     elif optimizer_name == 'sgd':
         base_config['parameters'] = {
             'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1e-1},
             'momentum': {'distribution': 'uniform', 'min': 0.8, 'max': 0.99},
-            'n_epochs': {'value': 50 if not is_best_config else 200}
+            'n_epochs': {'value': 200}
         }
     elif optimizer_name in ['sgd_metric', 'sgd_log_metric']:
         base_config['parameters'] = {
-            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1e2},
+            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1},
             'momentum': {'distribution': 'uniform', 'min': 0., 'max': 0.99},
             'xi': {'distribution': 'log_uniform_values', 'min': 1e-3, 'max': 1e1},
             'beta': {'distribution': 'uniform', 'min': 0, 'max': 0.3},
             'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2},
-            'n_epochs': {'value': 50 if not is_best_config else 200}
+            'n_epochs': {'value': 200}
         }
     elif optimizer_name == 'sgd_rms':
         base_config['parameters'] = {
-            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1e2},
+            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1},
             'momentum': {'distribution': 'uniform', 'min': 0., 'max': 0.99},
             'xi': {'distribution': 'log_uniform_values', 'min': 1e-3, 'max': 1e1},
             'beta': {'distribution': 'uniform', 'min': 0, 'max': 0.3},
             'beta_rms': {'distribution': 'uniform', 'min': 0.95, 'max': 0.999},
             'eps': {'distribution': 'log_uniform_values', 'min': 1e-10, 'max': 1e-6},
             'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2},
-            'n_epochs': {'value': 50 if not is_best_config else 200}
+            'n_epochs': {'value': 200}
         }
     elif optimizer_name == 'muon':
         base_config['parameters'] = {
@@ -1015,19 +1011,16 @@ def get_sweep_config(optimizer_name, is_best_config=False):
             'eps': {'distribution': 'log_uniform_values', 'min': 1e-10, 'max': 1e-6},
             'beta': {'distribution': 'uniform', 'min': 0.1, 'max': 0.9},
             'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2},
-            'n_epochs': {'value': 50 if not is_best_config else 200}
+            'n_epochs': {'value': 200}
         }
     
     return base_config
 
-def train(is_best_config=False):
+def train():
     """Training function for W&B sweep"""
-    global best_configs
-
+    
     # Add tags
     tags = [args.optimiser, "shakespeare_minigpt", f"run_{args.index}", args.search]
-    if is_best_config:
-        tags.append("best_config")
     
     # Initialize wandb
     wandb.init(project="induced_metric", tags=tags)
@@ -1074,30 +1067,6 @@ def train(is_best_config=False):
         'architecture': 'MiniGPT'
     })
     
-    # Track best configurations
-    if not is_best_config:
-        config_dict = dict(config)
-        config_entry = {
-            'config': config_dict,
-            'min_val_perplexity': results['min_val_perplexity'],
-            'run_name': wandb.run.name,
-            'run_id': wandb.run.id
-        }
-        
-        with best_config_lock:
-            best_configs.append(config_entry)
-            
-            # Keep only top 10 configurations
-            best_configs.sort(key=lambda x: x['min_val_perplexity'])
-            best_configs = best_configs[:10]
-    
-        # Save best configurations periodically
-        if len(best_configs) % 5 == 0:
-            df = pd.DataFrame(best_configs)
-            filename = f"best_hyperparameters_shakespeare_run_{args.index}.csv"
-            df.to_csv(filename, index=False)
-            print(f"Saved best configurations to {filename}")
-    
     print(f"Training completed in {training_time:.2f} seconds")
     print(f"Best validation perplexity: {results['min_val_perplexity']:.6f}")
     
@@ -1109,55 +1078,15 @@ if __name__ == "__main__":
     print(f"Run index: {args.index}")
     print(f"Search method: {args.search}")
     
-    # Initialize sweep
+    # Get sweep configuration
     sweep_config = get_sweep_config(args.optimiser)
+    
+    # Initialize the sweep
     sweep_id = wandb.sweep(sweep_config, project="induced_metric")
     
-    # Run sweep
-    wandb.agent(sweep_id, train, count=args.num_runs)
-
-    print("Sweep completed!")
-
-    # Use the best configurations we tracked during the sweep
-    print("Finding best configurations...")
+    print(f"Sweep ID: {sweep_id}")
     
-    if best_configs:
-        print(f"\nTop {len(best_configs)} Configurations:")
-        for i, entry in enumerate(best_configs):
-            print(f"\nRank {i+1}: Perplexity: {entry['min_val_perplexity']:.6f}")
-            for param, value in entry['config'].items():
-                if not param.startswith('_'):
-                    print(f"  {param}: {value}")
-        
-        # Run a new sweep with just these configurations
-        print(f"\nRunning a sweep with the top {len(best_configs)} configurations...")
-        
-        # Create a new sweep with the top configurations
-        sweep_config = {
-            'name': f'shakespeare_minigpt_best_{args.optimiser}_{args.index}',
-            'method': args.search,
-            'parameters': {},
-            'metric': {
-                'name': 'min_val_perplexity',
-                'goal': 'minimize'
-            }
-        }
-        
-        # Add the top configurations as grid search parameters
-        for param in best_configs[0]['config'].keys():
-            if not param.startswith('_'):
-                values = list(set([entry['config'][param] for entry in best_configs]))
-                sweep_config['parameters'][param] = {'values': values}
-        
-        # Set n_epochs to a higher value for the best configs
-        sweep_config['parameters']['n_epochs'] = {'value': 200}
-        
-        # Initialize the new sweep
-        best_sweep_id = wandb.sweep(sweep_config, project="induced_metric")
-        
-        # Start the sweep agent for the best configurations
-        wandb.agent(best_sweep_id, lambda: train(is_best_config=True), count=len(best_configs))
-        
-        print("Best configurations sweep completed!")
-    else:
-        print("No best configurations found during the sweep.")
+    # Start the sweep agent
+    wandb.agent(sweep_id, train, count=args.num_runs)
+    
+    print("Sweep completed!")
