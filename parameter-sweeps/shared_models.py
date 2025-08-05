@@ -23,7 +23,7 @@ def _compute_grad_norm_squared(grads):
     )
 
 
-def custom_sgd(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0.0):
+def custom_sgd(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.8, weight_decay=0.0):
     """Optimized custom SGD with momentum and metric modification.
     """
     
@@ -74,7 +74,7 @@ def custom_sgd(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0
     
     return optax.GradientTransformation(init, update)
 
-def custom_sgd_log(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0.0):
+def custom_sgd_log(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.8, weight_decay=0.0):
     """Optimised custom SGD with loss-based metric modification."""
     
     # Pre-compute constants
@@ -123,7 +123,7 @@ def custom_sgd_log(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_dec
     
     return optax.GradientTransformation(init, update)
 
-def custom_sgd_rms(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, beta_rms=0.99, weight_decay=0.0, eps=1e-8):
+def custom_sgd_rms(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.8, beta_rms=0.99, weight_decay=0.0, eps=1e-8):
     """custom SGD with momentum and metric modification. Gradients are scaled by RMS."""
     
     # Pre-compute constants

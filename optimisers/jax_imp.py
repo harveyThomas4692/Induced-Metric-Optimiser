@@ -49,7 +49,7 @@ class SGDState(NamedTuple):
     rms_ema: Optional[jnp.ndarray] = None  # EMA of RMS for custom_sgd_rms
 
 
-def custom_sgd(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0.0):
+def custom_sgd(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.8, weight_decay=0.0):
     """Custom SGD optimizer with momentum and metric modification.
     
     This optimizer implements SGD with momentum while dynamically adjusting the learning
@@ -60,7 +60,7 @@ def custom_sgd(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0
         learning_rate: Base learning rate (default: 0.1)
         momentum: Momentum factor for gradient accumulation (default: 0.9)
         xi: Scaling factor for gradient norm in metric computation (default: 0.1)
-        beta: EMA decay rate for metric scale tracking (default: 0.1)
+        beta: EMA decay rate for metric scale tracking (default: 0.8)
         weight_decay: Weight decay (L2 regularization) factor (default: 0.0)
         
     Returns:
@@ -131,7 +131,7 @@ def custom_sgd(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0
     
     return optax.GradientTransformation(init, update)
 
-def custom_sgd_log(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0.0):
+def custom_sgd_log(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.8, weight_decay=0.0):
     """Custom SGD optimizer with loss-based metric modification.
     
     This optimizer extends the basic custom SGD by incorporating the loss value
@@ -142,7 +142,7 @@ def custom_sgd_log(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_dec
         learning_rate: Base learning rate (default: 0.1)
         momentum: Momentum factor for gradient accumulation (default: 0.9)
         xi: Scaling factor for gradient norm in metric computation (default: 0.1)
-        beta: EMA decay rate for metric scale tracking (default: 0.1)
+        beta: EMA decay rate for metric scale tracking (default: 0.8)
         weight_decay: Weight decay (L2 regularization) factor (default: 0.0)
         
     Returns:
@@ -214,7 +214,7 @@ def custom_sgd_log(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_dec
     
     return optax.GradientTransformation(init, update)
 
-def custom_sgd_rms(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, beta_rms=0.99, weight_decay=0.0, eps=1e-8):
+def custom_sgd_rms(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.8, beta_rms=0.99, weight_decay=0.0, eps=1e-8):
     """Custom SGD optimizer with momentum, metric modification, and RMS scaling.
     
     This optimizer combines momentum-based SGD with adaptive gradient scaling similar
@@ -225,7 +225,7 @@ def custom_sgd_rms(learning_rate=0.1, momentum=0.9, xi=0.1, beta=0.1, beta_rms=0
         learning_rate: Base learning rate (default: 0.1)
         momentum: Momentum factor for gradient accumulation (default: 0.9)
         xi: Scaling factor for gradient norm in metric computation (default: 0.1)
-        beta: EMA decay rate for metric scale tracking (default: 0.1)
+        beta: EMA decay rate for metric scale tracking (default: 0.8)
         beta_rms: EMA decay rate for RMS computation (default: 0.99)
         weight_decay: Weight decay (L2 regularization) factor (default: 0.0)
         eps: Small constant for numerical stability (default: 1e-8)

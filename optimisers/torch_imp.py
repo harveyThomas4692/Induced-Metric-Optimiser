@@ -34,7 +34,7 @@ class CustomSGD(Optimizer):
     This optimizer corresponds to the custom_sgd function in the JAX implementation.
     """
     
-    def __init__(self, params, lr=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0.0):
+    def __init__(self, params, lr=0.1, momentum=0.9, xi=0.1, beta=0.8, weight_decay=0.0):
         """Initialize the CustomSGD optimizer.
         
         Args:
@@ -42,7 +42,7 @@ class CustomSGD(Optimizer):
             lr: Learning rate (default: 0.1)
             momentum: Momentum factor (default: 0.9)
             xi: Scaling factor for gradient norm in metric (default: 0.1)
-            beta: EMA decay rate for metric scale (default: 0.1)
+            beta: EMA decay rate for metric scale (default: 0.8)
             weight_decay: Weight decay factor (default: 0.0)
         """
         if lr < 0.0:
@@ -139,7 +139,7 @@ class CustomSGDLog(Optimizer):
     This optimizer corresponds to the custom_sgd_log function in the JAX implementation.
     """
     
-    def __init__(self, params, lr=0.1, momentum=0.9, xi=0.1, beta=0.1, weight_decay=0.0):
+    def __init__(self, params, lr=0.1, momentum=0.9, xi=0.1, beta=0.8, weight_decay=0.0):
         """Initialize the CustomSGDLog optimizer.
         
         Args:
@@ -147,7 +147,7 @@ class CustomSGDLog(Optimizer):
             lr: Learning rate (default: 0.1)
             momentum: Momentum factor (default: 0.9)
             xi: Scaling factor for gradient norm in metric (default: 0.1)
-            beta: EMA decay rate for metric scale (default: 0.1)
+            beta: EMA decay rate for metric scale (default: 0.8)
             weight_decay: Weight decay factor (default: 0.0)
         """
         if lr < 0.0:
@@ -252,7 +252,7 @@ class CustomSGDRMS(Optimizer):
     This optimizer corresponds to the custom_sgd_rms function in the JAX implementation.
     """
     
-    def __init__(self, params, lr=0.1, momentum=0.9, xi=0.1, beta=0.1, beta_rms=0.99, weight_decay=0.0, eps=1e-8):
+    def __init__(self, params, lr=0.1, momentum=0.9, xi=0.1, beta=0.8, beta_rms=0.99, weight_decay=0.0, eps=1e-8):
         """Initialize the CustomSGDRMS optimizer.
         
         Args:
@@ -260,7 +260,7 @@ class CustomSGDRMS(Optimizer):
             lr: Learning rate (default: 0.1)
             momentum: Momentum factor (default: 0.9)
             xi: Scaling factor for gradient norm in metric (default: 0.1)
-            beta: EMA decay rate for metric scale (default: 0.1)
+            beta: EMA decay rate for metric scale (default: 0.8)
             beta_rms: EMA decay rate for RMS (default: 0.99)
             weight_decay: Weight decay factor (default: 0.0)
             eps: Small constant for numerical stability (default: 1e-8)
