@@ -47,7 +47,7 @@ args = parser.parse_args()
 # Fixed architecture configuration
 ARCHITECTURE_CONFIG = {
     'batch_size': 256,
-    'n_epochs': 100,
+    'n_epochs': 250,
     'seq_len': 256,  # Increased for better language modeling
     'embed_dim': 128,  # Fixed architecture  
     'num_heads': 4,  # Fixed architecture
@@ -189,7 +189,7 @@ def train_adam(config, seed):
     key = jax.random.PRNGKey(seed)
     dummy_input = jnp.ones((1, config['seq_len']), dtype=jnp.int32)
     init_key, dropout_key = jax.random.split(key, 2)
-    params = model.init(init_key, dummy_input, train=True, rngs={'dropout': dropout_key})
+    params = model.init({'params': init_key, 'dropout': dropout_key}, dummy_input, train=True)
     
     # Initialize optimizer
     optimizer = optax.adam(
@@ -962,46 +962,41 @@ def get_sweep_config(optimizer_name):
     
     if optimizer_name == 'adam':
         base_config['parameters'] = {
-            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1},
+            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1},
             'beta1': {'distribution': 'uniform', 'min': 0.8, 'max': 0.99},
             'beta2': {'distribution': 'uniform', 'min': 0.9, 'max': 0.999},
-            'eps': {'values': [1e-8]},
-            'n_epochs': {'value': 200}
+            'eps': {'values': [1e-8]}
         }
     elif optimizer_name == 'adamw':
         base_config['parameters'] = {
-            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1},
+            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1},
             'beta1': {'distribution': 'uniform', 'min': 0.8, 'max': 0.99},
             'beta2': {'distribution': 'uniform', 'min': 0.9, 'max': 0.999},
             'eps': {'values': [1e-8]},
             'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2},
-            'n_epochs': {'value': 200}
         }
     elif optimizer_name == 'sgd':
         base_config['parameters'] = {
-            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1},
-            'momentum': {'distribution': 'uniform', 'min': 0.1, 'max': 0.99},
-            'n_epochs': {'value': 200}
+            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1},
+            'momentum': {'distribution': 'uniform', 'min': 0.1, 'max': 0.99}
         }
     elif optimizer_name in ['sgd_metric', 'sgd_log_metric']:
         base_config['parameters'] = {
-            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1},
+            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1},
             'momentum': {'distribution': 'uniform', 'min': 0.8, 'max': 0.99},
-            'xi': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-3},
+            'xi': {'distribution': 'log_uniform_values', 'min': 1e-8, 'max': 1e-4},
             'beta': {'distribution': 'uniform', 'min': 0.6, 'max': 0.9},
             'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2},
-            'n_epochs': {'value': 200}
         }
     elif optimizer_name == 'sgd_rms':
         base_config['parameters'] = {
-            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-5, 'max': 1},
+            'learning_rate': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1},
             'momentum': {'distribution': 'uniform', 'min': 0.8, 'max': 0.99},
-            'xi': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-3},
+            'xi': {'distribution': 'log_uniform_values', 'min': 1e-8, 'max': 1e-4},
             'beta': {'distribution': 'uniform', 'min': 0.6, 'max': 0.9},
             'beta_rms': {'distribution': 'uniform', 'min': 0.9, 'max': 0.999},
             'eps': {'values': [1e-8]},
-            'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2},
-            'n_epochs': {'value': 200}
+            'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2}
         }
     elif optimizer_name == 'muon':
         base_config['parameters'] = {
@@ -1010,8 +1005,7 @@ def get_sweep_config(optimizer_name):
             'adam_b2': {'distribution': 'uniform', 'min': 0.9, 'max': 0.999},
             'eps': {'values': [1e-8]},
             'beta': {'distribution': 'uniform', 'min': 0.9, 'max': 0.99},
-            'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2},
-            'n_epochs': {'value': 200}
+            'weight_decay': {'distribution': 'log_uniform_values', 'min': 1e-6, 'max': 1e-2}
         }
     
     return base_config
