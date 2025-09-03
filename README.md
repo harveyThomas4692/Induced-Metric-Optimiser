@@ -7,7 +7,7 @@ This repository contains the experiments and implementation for induced metric o
 
 Implementations in both JAX and PyTorch are included, along with a file demonstrating the implementations are equivilent. All experiments were performed in JAX.
 
-For further details, see the paper: …
+For further details, see the paper: To appear soon
 
 ---
 **Figure 2.** _The parameter update vs the gradient, where a is a scale that depends on the local curvature._  
